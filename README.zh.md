@@ -119,29 +119,24 @@ $DSH_HOME/storages/antigravity-proxy.json
 
 ## 模型列表
 
-登录后，在 DSH 模型选择器中选择 **Antigravity** 提供商。您可以在 **设置 > Antigravity** 的模型选择器中按需勾选或关闭单个模型（已勾选的模型将自动置顶展示），每个模型副标题均会显示其实时可用额度百分比。
+登录后，在 DSH 模型选择器中选择 **Antigravity** 提供商。模型列表由账号在 Antigravity 侧的实时目录生成：登录或刷新时会读取 `fetchAvailableModels` 返回的可用模型，因此列表取决于账号的套餐、区域与灰度节奏，账号看不到的模型不会被提供。您可以在 **设置 > Antigravity** 的模型选择器中按需勾选或关闭模型（已勾选的模型将自动置顶展示，并显示其实时可用额度百分比），修改会自动保存。
 
-支持注册的模型 ID：
+- **推理档位合并** —— 同一模型的多个强度档位（例如 `claude-opus-5-5-low|medium|high`）会合并为一个可选项并提供推理强度选择，而不是拆成多个条目。
+- **tiered 模型** —— ID 以 `-tiered` 结尾的模型（例如 tiered Flash 模型）提供 `low`、`medium`、`high` 三档，并映射到上游的 `thinkingLevel`。
+- **列表自动同步** —— 刷新后新出现的模型会自动启用；不再出现在目录中的模型也不再提供。
 
-| 模型 ID | 名称 | 额度池 |
-|---|---|---|
-| `gemini-3.7-flash` | Gemini 3.7 Flash | Gemini |
-| `gemini-3.6-flash` | Gemini 3.6 Flash | Gemini |
-| `gemini-3.5-flash` | Gemini 3.5 Flash | Gemini |
-| `gemini-3.1-pro` | Gemini 3.1 Pro | Gemini |
-| `gemini-3.1-flash-image` | Gemini 3.1 Flash Image | Gemini |
-| `gemini-3-flash` | Gemini 3 Flash | Gemini |
-| `gemini-2.5-pro` | Gemini 2.5 Pro | Gemini |
-| `gemini-2.5-flash` | Gemini 2.5 Flash | Gemini |
-| `claude-opus-4-6` | Claude Opus 4.6 | Claude & GPT (3P) |
-| `claude-sonnet-4-6` | Claude Sonnet 4.6 | Claude & GPT (3P) |
-| `gpt-oss-120b` | GPT-OSS 120B | Claude & GPT (3P) |
+对于支持推理的模型，插件会显式请求上游返回 thoughts，并把流中的 thoughts 映射为 DSH `reasoning` 内容块；默认采用该模型提供的 `medium` 档（未提供时取最接近的档位），仍可在模型选择器中调整。
 
-同一额度池内的模型共享 5 小时与每周额度。额度按 Token 成本比例扣除，因此较重的大模型（如 Claude Opus）消耗额度速度会快于轻量模型。
+### 自定义模型 ID
 
-插件会在可用时通过实时的 `fetchAvailableModels` 目录将这些公开 ID 解析为内部运行时模型 ID，并自带静态路由兜底。
+在 **设置 > Antigravity > 模型选择器** 中，可以添加目录里没有的模型 ID，或在新模型被收录前先行使用：
 
-对于支持推理的模型，插件会默认采用中等强度（仅提供 `high` 的模型采用 `high`），显式请求上游返回 thoughts，并把流中的 thoughts 映射为 DSH `reasoning` 内容块；仍可在模型选择器中调整推理等级。
+- 输入的 ID 会原样发送给 Antigravity，不做改写、不做推理档位后缀映射，也完全跳过目录解析。
+- 若该 ID 已由实时目录提供（包含它的任一档位变体），会按重复项拒绝，避免同一模型出现两次。
+- 已勾选的自定义 ID 会出现在 DSH 模型选择器中；移除后即不再提供。
+- 包含空白字符或不符合安全 ID 字符集的 ID 会被拒绝。
+
+同一额度池内的模型共享 5 小时与每周额度：Gemini 模型共用一个额度池，Claude 与 GPT 模型共用独立的 3P 额度池；额度按 Token 成本比例扣除，模型越重消耗越快。
 
 ---
 

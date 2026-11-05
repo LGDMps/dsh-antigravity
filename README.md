@@ -130,37 +130,42 @@ $DSH_HOME/storages/antigravity-proxy.json
 
 ## Models
 
-After login, select the **Antigravity** provider in DSH's model picker. Use the
-model selector in **Settings > Antigravity** to enable or disable individual
-models (enabled models are prioritized at the top of the list) — the live remaining quota percentage is shown next to each one.
+After login, select the **Antigravity** provider in DSH's model picker. The
+model list is built from the account's live Antigravity catalog on login and
+refresh, so it reflects the account's plan, region, and rollout: a model the
+account cannot see is not offered. Use the model selector in
+**Settings > Antigravity** to check or uncheck models (checked models are
+prioritized; the live remaining quota percentage is shown next to each one);
+changes save automatically.
 
-Registered model IDs:
+- **Merged reasoning variants** — effort variants of one model (for example
+  `claude-opus-5-5-low|medium|high`) appear as one selectable entry with a
+  reasoning-effort selector instead of separate entries.
+- **Tiered models** — an ID ending in `-tiered` (for example the tiered Flash model)
+  exposes `low`, `medium`, and `high`, mapped to the upstream `thinkingLevel`.
+- **Self-updating list** — a newly available model is enabled automatically after
+  a refresh; a model that leaves the catalog is no longer offered.
 
-| Model ID | Name | Quota pool |
-|---|---|---|
-| `gemini-3.7-flash` | Gemini 3.7 Flash | Gemini |
-| `gemini-3.6-flash` | Gemini 3.6 Flash | Gemini |
-| `gemini-3.5-flash` | Gemini 3.5 Flash | Gemini |
-| `gemini-3.1-pro` | Gemini 3.1 Pro | Gemini |
-| `gemini-3.1-flash-image` | Gemini 3.1 Flash Image | Gemini |
-| `gemini-3-flash` | Gemini 3 Flash | Gemini |
-| `gemini-2.5-pro` | Gemini 2.5 Pro | Gemini |
-| `gemini-2.5-flash` | Gemini 2.5 Flash | Gemini |
-| `claude-opus-4-6` | Claude Opus 4.6 | Claude & GPT (3P) |
-| `claude-sonnet-4-6` | Claude Sonnet 4.6 | Claude & GPT (3P) |
-| `gpt-oss-120b` | GPT-OSS 120B | Claude & GPT (3P) |
+For reasoning-capable models the plugin requests upstream thoughts explicitly,
+maps streamed thoughts to DSH `reasoning` content blocks, and defaults to
+`medium` effort when the model advertises it (otherwise the closest level it
+offers). The effort stays selectable from the model picker.
 
-Models in the same quota pool share a weekly limit and a 5-hour limit. Quota is
-consumed proportionally to token cost, so heavier models (e.g. Claude Opus)
-drain the pool faster than lighter ones.
+### Custom model IDs
 
-The plugin resolves these public IDs to runtime model IDs using the live
-`fetchAvailableModels` catalog when available, with static routing fallbacks.
+In **Settings > Antigravity > model selector**, add an ID that is not in the
+catalog, or one you want to use before the plugin is updated:
 
-For reasoning-capable models, the plugin defaults to medium effort (or high when
-that is the only advertised level), explicitly requests upstream thoughts, and
-maps streamed thoughts to DSH `reasoning` content blocks. The effort remains
-selectable from the model picker.
+- The ID is sent to Antigravity verbatim — exactly as entered, with no rewriting
+  and no effort-suffix mapping — and skips catalog resolution entirely.
+- An ID the live catalog already serves (including one of its effort variants)
+  is rejected as a duplicate, so the same model cannot appear twice.
+- Checked custom IDs appear in DSH's model picker; removing one stops offering it.
+- IDs containing whitespace, or outside the safe ID character set, are rejected.
+
+Models in the same quota pool share a weekly limit and a 5-hour limit: Gemini
+models share one pool, Claude and GPT models share a separate 3P pool. Quota is
+consumed proportionally to token cost, so heavier models drain it faster.
 
 ## License
 
