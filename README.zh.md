@@ -4,6 +4,11 @@
   <img src="./assets/images/chat-model-picker.png" alt="dsh-antigravity" width="100%" />
 </p>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/dsh-antigravity"><img src="https://img.shields.io/npm/v/dsh-antigravity.svg" alt="npm version" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license" /></a>
+</p>
+
 [English](./README.md) | 简体中文
 
 适用于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的 Google Antigravity / Cloud Code Assist 模型提供商插件。
@@ -12,21 +17,33 @@
 
 > 非官方集成。本项目与 Google 无关，亦未获得 Google 认可。请仅在您有权访问的账号和服务中使用。
 
+## 兼容性
+
+声明支持范围：DeepSeek Harness `>=0.1.5-rc.1 <0.3.0`（即 `package.json` 中的 `engines.dsh`）。已在 DSH **0.2.1-rc.5** 上验证：host 适配器、`/antigravity/api` 路由和 Web 设置模块均可正常加载与提供。
+
+DSH 0.2.1 会在安装前检查插件声明的 DSH 版本要求，不覆盖当前版本的旧构建会被直接拒绝安装。每次 DSH 发布新版本时请同步更新 `engines.dsh`；如果确认愿意承担未测试组合的风险，也可以用 `dsh plugin allow-version` 对具体版本做一次性豁免。
+
 ---
 
 ## 安装到 DSH Web
 
-### 方式一：直接从 GitHub 安装
+### 方式一：通过 npm 安装（推荐）
 
 ```sh
-dsh plugin --profile web add github:LiZhenNet/dsh-antigravity
+dsh plugin --profile web add dsh-antigravity
 ```
 
-### 方式二：通过本地 Release 包安装
+### 方式二：直接从 GitHub 安装
+
+```sh
+dsh plugin --profile web add github:Miyamiz39/dsh-antigravity
+```
+
+### 方式三：通过本地 Release 包安装
 
 ```sh
 npm run pack:dist
-dsh plugin --profile web add ./dist/dsh-antigravity-0.0.4.tgz
+dsh plugin --profile web add ./dist/dsh-antigravity-0.0.10.tgz
 ```
 
 该 package 声明了 DSH bundle patch，安装后会自动挂载 host 插件与浏览器设置页面。
@@ -41,7 +58,7 @@ cp -R dsh-antigravity "$DSH_HOME/profiles/web/node_modules/"
 
 ```yaml
 - insert:
-    - id: llm-antigravity
+    - id: dsh-antigravity
       name: dsh-antigravity
 ```
 
@@ -84,6 +101,20 @@ $DSH_HOME/storages/antigravity-oauth.json
 
 ---
 
+## 代理设置
+
+在 **设置 > Antigravity > 代理设置** 中可启用独立代理，并填写本机 HTTP 代理端口（默认 `7890`）。启用后，插件会把 Google OAuth token、账号信息、配额、模型发现和对话流请求发送到 `http://127.0.0.1:<端口>`，无需重启即可对后续请求生效。
+
+设置页的 **测试连接** 会通过当前输入的端口访问 Google OAuth 服务，并显示 HTTP 状态与耗时。该功能仅支持本机 HTTP/HTTPS CONNECT 代理，不支持 SOCKS 端口。浏览器中的 Google 授权页仍使用浏览器/系统代理。
+
+代理配置保存在：
+
+```text
+$DSH_HOME/storages/antigravity-proxy.json
+```
+
+---
+
 ## 模型列表
 
 登录后，在 DSH 模型选择器中选择 **Antigravity** 提供商。您可以在 **设置 > Antigravity** 的模型选择器中按需勾选或关闭单个模型（已勾选的模型将自动置顶展示），每个模型副标题均会显示其实时可用额度百分比。
@@ -107,6 +138,8 @@ $DSH_HOME/storages/antigravity-oauth.json
 同一额度池内的模型共享 5 小时与每周额度。额度按 Token 成本比例扣除，因此较重的大模型（如 Claude Opus）消耗额度速度会快于轻量模型。
 
 插件会在可用时通过实时的 `fetchAvailableModels` 目录将这些公开 ID 解析为内部运行时模型 ID，并自带静态路由兜底。
+
+对于支持推理的模型，插件会默认采用中等强度（仅提供 `high` 的模型采用 `high`），显式请求上游返回 thoughts，并把流中的 thoughts 映射为 DSH `reasoning` 内容块；仍可在模型选择器中调整推理等级。
 
 ---
 

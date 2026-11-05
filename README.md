@@ -4,6 +4,11 @@
   <img src="./assets/images/chat-model-picker.png" alt="dsh-antigravity" width="100%" />
 </p>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/dsh-antigravity"><img src="https://img.shields.io/npm/v/dsh-antigravity.svg" alt="npm version" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license" /></a>
+</p>
+
 English | [简体中文](./README.zh.md)
 
 Google Antigravity / Cloud Code Assist model provider for
@@ -16,19 +21,37 @@ talks to the Cloud Code Assist streaming API directly, and provides full bilingu
 > Unofficial integration. This project is not affiliated with or endorsed by
 > Google. Use it only with accounts and services you are authorized to access.
 
+## Compatibility
+
+Declared support: DeepSeek Harness `>=0.1.5-rc.1 <0.3.0` (the `engines.dsh`
+range in `package.json`). Verified against DSH **0.2.1-rc.5**: the host adapter,
+the `/antigravity/api` routes, and the Web settings module all load and serve.
+
+DSH 0.2.1 rejects plugins whose declared DSH requirements do not cover the
+running version, so an older build of this plugin is refused before install.
+Keep `engines.dsh` up to date when a new DSH release lands, or grant the
+one-off exact-version exemption with `dsh plugin allow-version` when you accept
+the risk of an untested pairing.
+
 ## Install into DSH Web
 
-### Option 1: Direct from GitHub
+### Option 1: From npm (Recommended)
 
 ```sh
-dsh plugin --profile web add github:LiZhenNet/dsh-antigravity
+dsh plugin --profile web add dsh-antigravity
 ```
 
-### Option 2: From Local Release Tarball
+### Option 2: Direct from GitHub
+
+```sh
+dsh plugin --profile web add github:Miyamiz39/dsh-antigravity
+```
+
+### Option 3: From Local Release Tarball
 
 ```sh
 npm run pack:dist
-dsh plugin --profile web add ./dist/dsh-antigravity-0.0.4.tgz
+dsh plugin --profile web add ./dist/dsh-antigravity-0.0.10.tgz
 ```
 
 The package declares a DSH bundle patch, so installation automatically mounts
@@ -45,7 +68,7 @@ Then add the plugin to the profile `cordis.patch.yml`:
 
 ```yaml
 - insert:
-    - id: llm-antigravity
+    - id: dsh-antigravity
       name: dsh-antigravity
 ```
 
@@ -87,6 +110,18 @@ $DSH_HOME/storages/antigravity-oauth.json
 
 Keep that file private. It contains access and refresh tokens.
 
+## Proxy Settings
+
+Open **Settings > Antigravity > Proxy Settings** to enable a dedicated proxy and enter the local HTTP proxy port (default `7890`). When enabled, Google OAuth token, account, quota, model-discovery, and chat-stream requests are routed through `http://127.0.0.1:<port>`. Changes apply to new requests immediately without restarting DSH.
+
+The **Test connection** button probes Google OAuth through the port currently entered and reports the HTTP status and latency. This supports local HTTP/HTTPS CONNECT proxies only, not SOCKS ports. The Google authorization page opened in the browser continues to use the browser/system proxy.
+
+The proxy configuration is stored at:
+
+```text
+$DSH_HOME/storages/antigravity-proxy.json
+```
+
 ## Models
 
 After login, select the **Antigravity** provider in DSH's model picker. Use the
@@ -115,6 +150,11 @@ drain the pool faster than lighter ones.
 
 The plugin resolves these public IDs to runtime model IDs using the live
 `fetchAvailableModels` catalog when available, with static routing fallbacks.
+
+For reasoning-capable models, the plugin defaults to medium effort (or high when
+that is the only advertised level), explicitly requests upstream thoughts, and
+maps streamed thoughts to DSH `reasoning` content blocks. The effort remains
+selectable from the model picker.
 
 ## License
 
