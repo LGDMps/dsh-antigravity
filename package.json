@@ -44,7 +44,8 @@
     "antigravity-login": "bin/antigravity-login.mjs"
   },
   "scripts": {
-    "check": "node --check lib/index.js && node --check lib/client.js && node --check bin/antigravity-login.mjs",
+    "check": "node --check lib/index.js && node --check lib/catalog.js && node --check lib/client.js && node --check bin/antigravity-login.mjs",
+    "test": "node --test \"test/*.test.mjs\"",
     "pack:dist": "node -e \"require('node:fs').mkdirSync('dist', { recursive: true })\" && npm pack --pack-destination dist"
   },
   "engines": {
