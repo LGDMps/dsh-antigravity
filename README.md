@@ -57,6 +57,12 @@ dsh plugin --profile web add ./dist/dsh-antigravity-0.0.10.tgz
 The package declares a DSH bundle patch, so installation automatically mounts
 the host plugin and browser settings page.
 
+A local-directory install is linked, not copied, so this package's own
+dependencies are not installed. The plugin still loads without them; only
+**Proxy Settings** needs the `undici` package — install from a tarball/registry
+so dependencies are installed, or run `pnpm install` once in the plugin
+checkout.
+
 If your DSH version does not support `dsh plugin add`, copy the package into
 the Web profile manually:
 

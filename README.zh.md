@@ -48,6 +48,8 @@ dsh plugin --profile web add ./dist/dsh-antigravity-0.0.10.tgz
 
 该 package 声明了 DSH bundle patch，安装后会自动挂载 host 插件与浏览器设置页面。
 
+本地目录安装是「链接」而不是复制，因此不会安装本包自己的依赖。插件本身没有依赖也能加载；只有 **代理设置** 需要 `undici`——请改用 tarball/registry 安装（依赖会一并安装），或在插件目录里执行一次 `pnpm install`。
+
 如果您的 DSH 版本暂不支持 `dsh plugin add`，可手动复制到 Web profile：
 
 ```sh
